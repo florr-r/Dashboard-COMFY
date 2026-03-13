@@ -1,0 +1,805 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>COMFY · Kawasan Tanpa Rokok</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:       #0a0f1e;
+  --surface:  #111827;
+  --surface2: #1a2438;
+  --border:   rgba(255,255,255,0.08);
+  --teal:     #00d4aa;
+  --teal-dim: #00a882;
+  --teal-glow:rgba(0,212,170,0.18);
+  --blue:     #4f8ef7;
+  --purple:   #7c6af5;
+  --red:      #ff4d6d;
+  --amber:    #ffb830;
+  --green:    #22d47e;
+  --white:    #f0f6ff;
+  --muted:    rgba(240,246,255,0.45);
+  --muted2:   rgba(240,246,255,0.2);
+}
+
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+
+html, body {
+  height: 100%;
+  font-family: 'Outfit', sans-serif;
+  background: var(--bg);
+  color: var(--white);
+  overflow: hidden;
+}
+
+/* ── SCREENS ── */
+.screen { display:none; position:absolute; inset:0; overflow-y:auto; overflow-x:hidden; }
+.screen.active { display:flex; flex-direction:column; }
+
+/* ═══════════════════════════════════════
+   SCREEN 1 — SPLASH
+═══════════════════════════════════════ */
+#s-splash {
+  align-items: center;
+  justify-content: flex-start;
+  min-height: 100%;
+  padding: 0;
+}
+
+.splash-bg {
+  position: fixed; inset: 0; z-index: 0;
+  background: linear-gradient(160deg, #0d1b3e 0%, #0a0f1e 45%, #0e1a2a 100%);
+  overflow: hidden;
+}
+.splash-orb {
+  position: absolute; border-radius: 50%;
+  filter: blur(80px); pointer-events: none;
+}
+.orb-1 { width:340px; height:340px; background:rgba(0,212,170,0.12); top:-80px; left:-60px; animation: orbFloat 14s ease-in-out infinite alternate; }
+.orb-2 { width:280px; height:280px; background:rgba(79,142,247,0.1); bottom:-60px; right:-40px; animation: orbFloat 18s ease-in-out infinite alternate-reverse; }
+.orb-3 { width:200px; height:200px; background:rgba(124,106,245,0.08); top:40%; left:50%; animation: orbFloat 11s ease-in-out infinite alternate; }
+@keyframes orbFloat { to { transform: translate(30px, 40px) scale(1.1); } }
+
+/* Animated ring */
+.splash-ring {
+  position: fixed; top: -120px; left: 50%; transform: translateX(-50%);
+  width: 480px; height: 480px; border-radius: 50%;
+  border: 1px solid rgba(0,212,170,0.06);
+  animation: ringPulse 6s ease-in-out infinite;
+}
+.splash-ring::before {
+  content:''; position:absolute; inset:-40px; border-radius:50%;
+  border: 1px solid rgba(0,212,170,0.04);
+}
+@keyframes ringPulse { 0%,100%{opacity:0.5;transform:translateX(-50%) scale(1)} 50%{opacity:1;transform:translateX(-50%) scale(1.03)} }
+
+.splash-content {
+  position: relative; z-index: 1;
+  width: 100%; max-width: 420px;
+  margin: 0 auto;
+  padding: 52px 28px 36px;
+  display: flex; flex-direction: column; align-items: center;
+}
+
+/* WiFi badge */
+.wifi-badge {
+  display: inline-flex; align-items: center; gap: 7px;
+  background: rgba(0,212,170,0.1);
+  border: 1px solid rgba(0,212,170,0.25);
+  color: var(--teal); font-size: 12px; font-weight: 600;
+  padding: 6px 14px; border-radius: 20px;
+  margin-bottom: 36px;
+  animation: fadeSlideDown 0.6s ease forwards;
+}
+.wifi-dot { width:7px; height:7px; border-radius:50%; background:var(--teal); animation: wifiPulse 1.8s ease-in-out infinite; }
+@keyframes wifiPulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.4;transform:scale(0.8)} }
+
+/* Logo */
+.logo-circle {
+  width: 88px; height: 88px; border-radius: 50%;
+  background: linear-gradient(145deg, rgba(0,212,170,0.2), rgba(79,142,247,0.15));
+  border: 2px solid rgba(0,212,170,0.3);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 40px; margin-bottom: 18px;
+  box-shadow: 0 0 40px rgba(0,212,170,0.2), 0 0 80px rgba(0,212,170,0.08);
+  animation: logoPop 0.7s cubic-bezier(.17,.67,.41,1.3) forwards;
+  animation-delay: 0.2s; opacity: 0;
+}
+@keyframes logoPop { 0%{opacity:0;transform:scale(0.6)} 100%{opacity:1;transform:scale(1)} }
+
+.app-name {
+  font-size: 32px; font-weight: 800; letter-spacing: -1px;
+  background: linear-gradient(135deg, #00d4aa, #4f8ef7);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+  margin-bottom: 6px;
+  animation: fadeSlideUp 0.6s ease forwards; animation-delay: 0.35s; opacity: 0;
+}
+.app-tagline {
+  font-size: 13px; color: var(--muted); font-weight: 400; letter-spacing: 0.5px;
+  margin-bottom: 40px;
+  animation: fadeSlideUp 0.6s ease forwards; animation-delay: 0.45s; opacity: 0;
+}
+
+/* AQI Card */
+.aqi-card {
+  width: 100%;
+  background: linear-gradient(135deg, #00a882 0%, #0081cc 100%);
+  border-radius: 22px; padding: 28px 24px;
+  margin-bottom: 24px; position: relative; overflow: hidden;
+  box-shadow: 0 12px 40px rgba(0,168,130,0.35);
+  animation: fadeSlideUp 0.6s ease forwards; animation-delay: 0.55s; opacity: 0;
+}
+.aqi-card::before {
+  content:''; position:absolute; top:-60px; right:-60px;
+  width:200px; height:200px; border-radius:50%;
+  background: rgba(255,255,255,0.07);
+}
+.aqi-card::after {
+  content:''; position:absolute; bottom:-40px; left:-20px;
+  width:130px; height:130px; border-radius:50%;
+  background: rgba(255,255,255,0.05);
+}
+.aqi-top { display:flex; align-items:center; justify-content:space-between; margin-bottom:6px; position:relative; z-index:1; }
+.aqi-loc { display:flex; align-items:center; gap:5px; font-size:12px; color:rgba(255,255,255,0.75); font-weight:500; }
+.aqi-live { display:flex; align-items:center; gap:5px; font-size:11px; color:rgba(255,255,255,0.7); font-weight:600; }
+.aqi-live-dot { width:7px; height:7px; border-radius:50%; background:#fff; animation:wifiPulse 1.8s ease-in-out infinite; }
+.aqi-number {
+  font-size: 80px; font-weight: 900; color: white; line-height: 1;
+  letter-spacing: -3px; position: relative; z-index:1;
+  text-shadow: 0 4px 24px rgba(0,0,0,0.2);
+  font-family: 'Outfit', sans-serif;
+}
+.aqi-label {
+  font-size: 15px; font-weight: 700; color: white; letter-spacing: 2px;
+  text-transform: uppercase; position: relative; z-index:1;
+  margin-bottom: 14px;
+}
+.aqi-desc { font-size: 13px; color: rgba(255,255,255,0.8); line-height: 1.5; position:relative; z-index:1; }
+
+/* Smoke level indicator */
+.smoke-row {
+  width:100%; display:flex; gap:10px; margin-bottom:24px;
+  animation: fadeSlideUp 0.6s ease forwards; animation-delay: 0.65s; opacity: 0;
+}
+.smoke-chip {
+  flex:1; background:var(--surface2);
+  border: 1px solid var(--border); border-radius:14px;
+  padding:12px 10px; text-align:center;
+}
+.smoke-chip-val { font-size:20px; font-weight:800; color:var(--teal); line-height:1; }
+.smoke-chip-lbl { font-size:10px; color:var(--muted); margin-top:3px; font-weight:500; letter-spacing:0.3px; }
+
+/* Action buttons */
+.btn-primary {
+  width:100%; padding:17px 20px;
+  background: linear-gradient(135deg, #00d4aa, #4f8ef7);
+  color: white; border: none; border-radius: 16px;
+  font-size: 16px; font-weight: 700; font-family: 'Outfit', sans-serif;
+  cursor: pointer; transition: all 0.2s;
+  display: flex; align-items: center; justify-content: center; gap: 10px;
+  box-shadow: 0 6px 24px rgba(0,212,170,0.35);
+  margin-bottom: 12px;
+  animation: fadeSlideUp 0.6s ease forwards; animation-delay: 0.75s; opacity: 0;
+}
+.btn-primary:hover { transform:translateY(-2px); box-shadow:0 10px 32px rgba(0,212,170,0.45); }
+.btn-primary:active { transform:translateY(0); }
+
+.btn-secondary {
+  width:100%; padding:15px 20px;
+  background: transparent;
+  color: var(--muted); border: 1.5px solid var(--border); border-radius: 16px;
+  font-size: 14px; font-weight: 600; font-family: 'Outfit', sans-serif;
+  cursor: pointer; transition: all 0.2s;
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  animation: fadeSlideUp 0.6s ease forwards; animation-delay: 0.85s; opacity: 0;
+}
+.btn-secondary:hover { border-color:rgba(255,255,255,0.25); color:var(--white); background:rgba(255,255,255,0.04); }
+
+.splash-footer {
+  margin-top: 28px; text-align: center;
+  font-size: 11px; color: var(--muted2);
+  animation: fadeSlideUp 0.6s ease forwards; animation-delay: 0.95s; opacity: 0;
+}
+.splash-footer span { color: rgba(0,212,170,0.6); }
+
+/* ═══════════════════════════════════════
+   SCREEN 2 — FORM LAPORAN
+═══════════════════════════════════════ */
+#s-form {
+  flex-direction: column;
+  min-height: 100%;
+  background: var(--bg);
+}
+
+.form-topbar {
+  position: sticky; top:0; z-index:50;
+  background: rgba(10,15,30,0.95); backdrop-filter:blur(16px);
+  border-bottom: 1px solid var(--border);
+  padding: 16px 24px;
+  display: flex; align-items: center; gap: 14px;
+}
+.back-btn {
+  width:36px; height:36px; border-radius:10px;
+  background:var(--surface2); border:1px solid var(--border);
+  display:flex; align-items:center; justify-content:center;
+  font-size:18px; cursor:pointer; flex-shrink:0;
+  transition:all 0.15s;
+}
+.back-btn:hover { background:var(--surface); }
+.form-topbar-title { font-size:16px; font-weight:700; color:var(--white); }
+.form-topbar-sub { font-size:11px; color:var(--muted); margin-top:1px; }
+
+.form-body { padding: 24px; flex:1; max-width:480px; margin:0 auto; width:100%; }
+
+/* Progress */
+.progress-wrap { margin-bottom:28px; }
+.progress-label { display:flex; justify-content:space-between; font-size:11px; color:var(--muted); margin-bottom:8px; font-weight:600; }
+.progress-track { height:4px; background:var(--surface2); border-radius:4px; overflow:hidden; }
+.progress-fill { height:100%; border-radius:4px; background:linear-gradient(90deg,var(--teal),var(--blue)); transition:width 0.4s ease; }
+
+/* Upload zone */
+.upload-zone {
+  border: 2px dashed rgba(0,212,170,0.3);
+  border-radius: 18px; padding: 28px 20px;
+  text-align: center; cursor: pointer;
+  background: rgba(0,212,170,0.04);
+  transition: all 0.2s; margin-bottom: 20px;
+  position: relative;
+}
+.upload-zone:hover { border-color:rgba(0,212,170,0.6); background:rgba(0,212,170,0.07); }
+.upload-zone input { position:absolute; inset:0; opacity:0; cursor:pointer; }
+.upload-icon { font-size:36px; margin-bottom:8px; }
+.upload-text { font-size:14px; font-weight:600; color:var(--white); }
+.upload-sub { font-size:11px; color:var(--muted); margin-top:4px; }
+.upload-preview { display:none; flex-direction:column; align-items:center; gap:10px; }
+.upload-preview img { max-height:120px; border-radius:12px; object-fit:cover; }
+.upload-ok { font-size:12px; color:var(--teal); font-weight:600; }
+
+/* Category grid */
+.cat-grid {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 10px; margin-bottom: 20px;
+}
+.cat-item {
+  background: var(--surface2); border: 1.5px solid var(--border);
+  border-radius: 14px; padding: 14px 12px;
+  cursor: pointer; transition: all 0.15s;
+  display: flex; flex-direction: column; align-items: center; gap: 6px;
+  text-align: center;
+}
+.cat-item:hover { border-color:rgba(0,212,170,0.4); background:rgba(0,212,170,0.06); }
+.cat-item.selected { border-color:var(--teal); background:rgba(0,212,170,0.1); }
+.cat-emoji { font-size:24px; }
+.cat-label { font-size:12px; font-weight:600; color:var(--muted); }
+.cat-item.selected .cat-label { color:var(--teal); }
+
+/* GPS row */
+.gps-row {
+  display:flex; align-items:center; gap:10px;
+  background: rgba(0,212,170,0.08); border:1px solid rgba(0,212,170,0.2);
+  border-radius:12px; padding:12px 14px; margin-bottom:16px;
+  font-size:13px; color:var(--teal); font-weight:500;
+}
+.gps-pulse { width:8px; height:8px; border-radius:50%; background:var(--teal); animation:wifiPulse 1.8s ease-in-out infinite; flex-shrink:0; }
+
+/* Form elements */
+.field-label {
+  font-size:12px; font-weight:700; color:var(--muted);
+  letter-spacing:0.5px; text-transform:uppercase;
+  margin-bottom:8px; display:block;
+}
+.field-select, .field-textarea {
+  width:100%; background:var(--surface2);
+  border:1.5px solid var(--border); border-radius:12px;
+  padding:13px 14px; font-size:14px; color:var(--white);
+  font-family:'Outfit',sans-serif; outline:none; transition:all 0.15s;
+  margin-bottom:16px;
+}
+.field-select { cursor:pointer; appearance:none;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%23666' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14L2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E");
+  background-repeat:no-repeat; background-position:right 14px center;
+  padding-right:36px;
+}
+.field-select:focus, .field-textarea:focus {
+  border-color:rgba(0,212,170,0.5);
+  background:var(--surface);
+  box-shadow:0 0 0 3px rgba(0,212,170,0.1);
+}
+.field-select option { background:#1a2438; }
+.field-textarea { resize:vertical; min-height:80px; line-height:1.5; }
+
+/* Severity pills */
+.severity-row { display:flex; gap:8px; margin-bottom:20px; }
+.sev-pill {
+  flex:1; text-align:center; padding:10px 8px;
+  border:1.5px solid var(--border); border-radius:12px;
+  font-size:12px; font-weight:600; cursor:pointer; transition:all 0.15s;
+  color:var(--muted); background:var(--surface2);
+}
+.sev-pill.selected-r { border-color:#22d47e; background:rgba(34,212,126,0.1); color:#22d47e; }
+.sev-pill.selected-y { border-color:var(--amber); background:rgba(255,184,48,0.1); color:var(--amber); }
+.sev-pill.selected-x { border-color:var(--red); background:rgba(255,77,109,0.1); color:var(--red); }
+
+.form-submit-btn {
+  width:100%; padding:17px;
+  background: linear-gradient(135deg, #00d4aa, #4f8ef7);
+  color:white; border:none; border-radius:16px;
+  font-size:16px; font-weight:700; font-family:'Outfit',sans-serif;
+  cursor:pointer; transition:all 0.2s;
+  box-shadow:0 6px 24px rgba(0,212,170,0.3);
+  display:flex; align-items:center; justify-content:center; gap:10px;
+  margin-top:8px;
+}
+.form-submit-btn:hover { transform:translateY(-2px); }
+.form-submit-btn:active { transform:translateY(0); }
+
+/* ═══════════════════════════════════════
+   SCREEN 3 — SUCCESS
+═══════════════════════════════════════ */
+#s-success {
+  align-items: center; justify-content: center;
+  padding: 40px 28px;
+  background: var(--bg); text-align: center;
+}
+
+.success-glow {
+  width:120px; height:120px; border-radius:50%;
+  background: linear-gradient(135deg, rgba(0,212,170,0.2), rgba(34,212,126,0.15));
+  border: 2px solid rgba(0,212,170,0.4);
+  display:flex; align-items:center; justify-content:center;
+  font-size:52px; margin-bottom:28px;
+  box-shadow: 0 0 60px rgba(0,212,170,0.25);
+  animation: successPop 0.6s cubic-bezier(.17,.67,.41,1.3) forwards;
+}
+@keyframes successPop { 0%{transform:scale(0);opacity:0} 100%{transform:scale(1);opacity:1} }
+
+.success-title {
+  font-size:26px; font-weight:800; color:var(--white);
+  margin-bottom:10px; letter-spacing:-0.5px;
+  animation: fadeSlideUp 0.5s ease forwards; animation-delay:0.3s; opacity:0;
+}
+.success-sub {
+  font-size:14px; color:var(--muted); line-height:1.6;
+  max-width:300px; margin:0 auto 28px;
+  animation: fadeSlideUp 0.5s ease forwards; animation-delay:0.4s; opacity:0;
+}
+
+.points-badge {
+  display:inline-flex; align-items:center; gap:10px;
+  background:rgba(0,212,170,0.1); border:1.5px solid rgba(0,212,170,0.3);
+  border-radius:16px; padding:14px 24px;
+  font-size:18px; font-weight:800; color:var(--teal);
+  margin-bottom:32px;
+  animation: fadeSlideUp 0.5s ease forwards; animation-delay:0.5s; opacity:0;
+}
+
+.success-actions { width:100%; max-width:360px; animation: fadeSlideUp 0.5s ease forwards; animation-delay:0.6s; opacity:0; }
+
+/* ── WiFi Access Granted ── */
+.wifi-granted {
+  width:100%; background:var(--surface2);
+  border:1px solid rgba(0,212,170,0.2); border-radius:18px;
+  padding:20px; margin-bottom:16px; text-align:left;
+}
+.wifi-granted-title { font-size:14px; font-weight:700; color:var(--teal); margin-bottom:4px; display:flex; align-items:center; gap:7px; }
+.wifi-granted-sub { font-size:12px; color:var(--muted); line-height:1.5; }
+.wifi-speed { display:flex; gap:12px; margin-top:12px; }
+.ws-item { flex:1; text-align:center; background:rgba(0,0,0,0.2); border-radius:10px; padding:8px; }
+.ws-val { font-size:18px; font-weight:800; color:var(--white); }
+.ws-lbl { font-size:10px; color:var(--muted); margin-top:2px; }
+
+.internet-btn {
+  width:100%; padding:16px;
+  background: linear-gradient(135deg, #00d4aa, #4f8ef7);
+  color:white; border:none; border-radius:14px;
+  font-size:15px; font-weight:700; font-family:'Outfit',sans-serif;
+  cursor:pointer; transition:all 0.2s;
+  box-shadow:0 6px 24px rgba(0,212,170,0.3);
+  display:flex; align-items:center; justify-content:center; gap:8px;
+  margin-bottom:12px;
+}
+.internet-btn:hover { transform:translateY(-2px); }
+
+.report-again-btn {
+  width:100%; padding:14px;
+  background:transparent; color:var(--muted);
+  border:1.5px solid var(--border); border-radius:14px;
+  font-size:14px; font-weight:600; font-family:'Outfit',sans-serif;
+  cursor:pointer; transition:all 0.2s;
+}
+.report-again-btn:hover { color:var(--white); border-color:rgba(255,255,255,0.2); }
+
+/* ═══════════════════════════════════════
+   SCREEN 4 — INTERNET REDIRECT
+═══════════════════════════════════════ */
+#s-internet {
+  align-items:center; justify-content:center;
+  padding:40px 28px; text-align:center;
+}
+.internet-loader {
+  width:80px; height:80px; border-radius:50%;
+  border: 3px solid var(--surface2);
+  border-top-color: var(--teal);
+  animation: spin 1s linear infinite;
+  margin-bottom:24px;
+}
+@keyframes spin { to { transform:rotate(360deg); } }
+.internet-title { font-size:20px; font-weight:700; color:var(--white); margin-bottom:8px; }
+.internet-sub { font-size:13px; color:var(--muted); }
+
+/* ═══════════════════════════════════════
+   SHARED ANIMATIONS
+═══════════════════════════════════════ */
+@keyframes fadeSlideUp {
+  from { opacity:0; transform:translateY(16px); }
+  to   { opacity:1; transform:translateY(0); }
+}
+@keyframes fadeSlideDown {
+  from { opacity:0; transform:translateY(-10px); }
+  to   { opacity:1; transform:translateY(0); }
+}
+
+/* ── Screen transition ── */
+.screen { animation: screenIn 0.35s ease forwards; }
+@keyframes screenIn { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
+
+/* ── Scrollbar ── */
+::-webkit-scrollbar { width:4px; }
+::-webkit-scrollbar-thumb { background:rgba(0,212,170,0.3); border-radius:2px; }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════
+     SCREEN 1: SPLASH / LANDING
+═══════════════════════════════════════ -->
+<div class="screen active" id="s-splash">
+  <div class="splash-bg">
+    <div class="splash-orb orb-1"></div>
+    <div class="splash-orb orb-2"></div>
+    <div class="splash-orb orb-3"></div>
+    <div class="splash-ring"></div>
+  </div>
+
+  <div class="splash-content">
+    <div class="wifi-badge">
+      <div class="wifi-dot"></div>
+      Terhubung ke COMFY-PUBLIC
+    </div>
+
+    <div class="logo-circle">🚭</div>
+    <div class="app-name">COMFY</div>
+    <div class="app-tagline">Smart KTR Monitoring · Banda Aceh</div>
+
+    <!-- AQI / Smoke Status Card -->
+    <div class="aqi-card">
+      <div class="aqi-top">
+        <div class="aqi-loc">📍 <span id="locName">Masjid Raya Baiturrahman</span></div>
+        <div class="aqi-live"><div class="aqi-live-dot"></div> LIVE</div>
+      </div>
+      <div class="aqi-number" id="smokeVal">2</div>
+      <div class="aqi-label" id="smokeStatus">KUALITAS UDARA BAIK</div>
+      <div class="aqi-desc" id="smokeDesc">Udara di kawasan ini dalam kondisi baik. Tidak ada deteksi asap rokok saat ini. Terima kasih telah menjaga kebersihan KTR!</div>
+    </div>
+
+    <!-- Sensor mini chips -->
+    <div class="smoke-row">
+      <div class="smoke-chip">
+        <div class="smoke-chip-val" id="chip1">0</div>
+        <div class="smoke-chip-lbl">Sensor Aktif</div>
+      </div>
+      <div class="smoke-chip">
+        <div class="smoke-chip-val" id="chip2">14</div>
+        <div class="smoke-chip-lbl">Laporan Hari Ini</div>
+      </div>
+      <div class="smoke-chip">
+        <div class="smoke-chip-val" id="chip3">38</div>
+        <div class="smoke-chip-lbl">Sensor KTR</div>
+      </div>
+    </div>
+
+    <!-- CTAs -->
+    <button class="btn-primary" onclick="goToForm()">
+      📢 Laporkan Pelanggaran KTR
+    </button>
+    <button class="btn-secondary" onclick="goToInternet()">
+      ➜ Lanjut ke Internet
+    </button>
+
+    <div class="splash-footer">
+      Didukung oleh <span>Dinkes Aceh</span> &amp; <span>Satpol PP Banda Aceh</span><br>
+      Data diperbarui setiap <span>30 detik</span>
+    </div>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════
+     SCREEN 2: FORM LAPORAN
+═══════════════════════════════════════ -->
+<div class="screen" id="s-form">
+  <div class="form-topbar">
+    <div class="back-btn" onclick="goTo('s-splash')">←</div>
+    <div>
+      <div class="form-topbar-title">Laporan Pelanggaran KTR</div>
+      <div class="form-topbar-sub">+10 poin · Data langsung ke Satpol PP</div>
+    </div>
+  </div>
+
+  <div class="form-body">
+    <!-- Progress -->
+    <div class="progress-wrap">
+      <div class="progress-label"><span>Isi Laporan</span><span id="progressTxt">0%</span></div>
+      <div class="progress-track"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+    </div>
+
+    <!-- Upload foto -->
+    <label class="field-label">Foto Bukti <span style="color:var(--muted);font-weight:400;text-transform:none">(sangat disarankan)</span></label>
+    <div class="upload-zone" id="uploadZone">
+      <input type="file" accept="image/*" capture="environment" onchange="handleUpload(event)">
+      <div id="uploadDefault">
+        <div class="upload-icon">📷</div>
+        <div class="upload-text">Foto atau ambil gambar</div>
+        <div class="upload-sub">Wajah pelanggar otomatis di-blur · Maks 10MB</div>
+      </div>
+      <div class="upload-preview" id="uploadPreview">
+        <img id="previewImg" src="" alt="preview">
+        <span class="upload-ok">✅ Foto siap dikirim</span>
+      </div>
+    </div>
+
+    <!-- Kategori -->
+    <label class="field-label">Jenis Pelanggaran</label>
+    <div class="cat-grid" id="catGrid">
+      <div class="cat-item selected" onclick="selectCat(this,'🚬 Merokok di KTR')">
+        <div class="cat-emoji">🚬</div>
+        <div class="cat-label">Merokok di KTR</div>
+      </div>
+      <div class="cat-item" onclick="selectCat(this,'💨 Asap di Ruang Tertutup')">
+        <div class="cat-emoji">💨</div>
+        <div class="cat-label">Asap Rokok di Ruang Tertutup</div>
+      </div>
+      <div class="cat-item" onclick="selectCat(this,'🏥 Merokok Area RS')">
+        <div class="cat-emoji">🏥</div>
+        <div class="cat-label">Merokok di Area RS</div>
+      </div>
+      <div class="cat-item" onclick="selectCat(this,'🏫 Merokok Area Sekolah')">
+        <div class="cat-emoji">🏫</div>
+        <div class="cat-label">Merokok di Area Sekolah</div>
+      </div>
+      <div class="cat-item" onclick="selectCat(this,'🕌 Merokok Area Ibadah')">
+        <div class="cat-emoji">🕌</div>
+        <div class="cat-label">Merokok di Tempat Ibadah</div>
+      </div>
+      <div class="cat-item" onclick="selectCat(this,'📋 Lainnya')">
+        <div class="cat-emoji">📋</div>
+        <div class="cat-label">Lainnya</div>
+      </div>
+    </div>
+
+    <!-- Lokasi KTR -->
+    <label class="field-label">Lokasi KTR</label>
+    <div class="gps-row">
+      <div class="gps-pulse"></div>
+      <span>GPS: <strong id="gpsLoc">Masjid Raya Baiturrahman, Banda Aceh</strong></span>
+    </div>
+    <select class="field-select" id="ktrLoc">
+      <option value="">— Pilih Kawasan KTR —</option>
+      <optgroup label="🏥 Fasilitas Kesehatan">
+        <option>RS Zainoel Abidin (RSUDZA)</option>
+        <option>RSUD Meuraxa</option>
+        <option>Puskesmas Baiturrahman</option>
+      </optgroup>
+      <optgroup label="🕌 Tempat Ibadah">
+        <option>Masjid Raya Baiturrahman</option>
+        <option>Masjid At-Taqarub</option>
+      </optgroup>
+      <optgroup label="🏫 Sekolah & Kampus">
+        <option>SMPN 2 Banda Aceh</option>
+        <option>SMAN 3 Banda Aceh</option>
+        <option>Universitas Syiah Kuala</option>
+        <option>UIN Ar-Raniry</option>
+      </optgroup>
+      <optgroup label="🏛️ Kantor Pemerintah">
+        <option>Balaikota Banda Aceh</option>
+        <option>Kantor Gubernur Aceh</option>
+      </optgroup>
+      <optgroup label="🚌 Transportasi">
+        <option>Terminal Batoh</option>
+        <option>Halte Trans Koetaradja</option>
+      </optgroup>
+    </select>
+
+    <!-- Deskripsi -->
+    <label class="field-label">Deskripsi Singkat</label>
+    <textarea class="field-textarea" id="descField" placeholder="Jelaskan situasi yang Anda temukan... contoh: Ada seseorang merokok di depan pintu masuk IGD" oninput="updateProgress()"></textarea>
+
+    <!-- Tingkat keparahan -->
+    <label class="field-label">Tingkat Keparahan</label>
+    <div class="severity-row">
+      <div class="sev-pill selected-r" id="sev-r" onclick="selectSev('r')">😐 Ringan</div>
+      <div class="sev-pill" id="sev-y" onclick="selectSev('y')">😟 Sedang</div>
+      <div class="sev-pill" id="sev-x" onclick="selectSev('x')">😱 Berat</div>
+    </div>
+
+    <button class="form-submit-btn" onclick="submitReport()">
+      🚨 Kirim Laporan <span style="font-size:13px;opacity:0.75">+10 Poin</span>
+    </button>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════
+     SCREEN 3: SUCCESS
+═══════════════════════════════════════ -->
+<div class="screen" id="s-success">
+  <div class="success-glow">✅</div>
+
+  <div class="success-title">Laporan Terkirim!</div>
+  <div class="success-sub">Terima kasih telah menjaga KTR Banda Aceh. Laporan Anda telah diteruskan ke tim Satpol PP dan Dinas Kesehatan Aceh.</div>
+
+  <div class="points-badge">🎉 +10 Poin Diperoleh!</div>
+
+  <div class="success-actions">
+    <!-- WiFi Access Card -->
+    <div class="wifi-granted">
+      <div class="wifi-granted-title">
+        <span>📶</span> Akses Internet Diberikan
+      </div>
+      <div class="wifi-granted-sub">COMFY-PUBLIC siap digunakan. Koneksi aktif selama 60 menit.</div>
+      <div class="wifi-speed">
+        <div class="ws-item">
+          <div class="ws-val">10</div>
+          <div class="ws-lbl">Mbps ↓</div>
+        </div>
+        <div class="ws-item">
+          <div class="ws-val">5</div>
+          <div class="ws-lbl">Mbps ↑</div>
+        </div>
+        <div class="ws-item">
+          <div class="ws-val">60</div>
+          <div class="ws-lbl">Menit</div>
+        </div>
+      </div>
+    </div>
+
+    <button class="internet-btn" onclick="goToInternet()">
+      🌐 Masuk ke Platform COMFY
+    </button>
+    <button class="report-again-btn" onclick="goToForm()">
+      + Buat Laporan Lagi
+    </button>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════
+     SCREEN 4: INTERNET REDIRECT
+═══════════════════════════════════════ -->
+<div class="screen" id="s-internet">
+  <div class="internet-loader"></div>
+  <div class="internet-title">Membuka COMFY...</div>
+  <div class="internet-sub">Sebentar lagi Anda akan masuk<br>ke platform COMFY.</div>
+</div>
+
+
+<script>
+// ── NAVIGATION ──
+function goTo(screenId) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(screenId).classList.add('active');
+  document.getElementById(screenId).scrollTop = 0;
+}
+
+function goToForm()     { goTo('s-form'); updateProgress(); }
+function goToSuccess()  { goTo('s-success'); }
+function goToInternet() {
+  goTo('s-internet');
+  setTimeout(() => {
+    window.location.href = 'index.html';
+  }, 1800);
+}
+
+// ── LIVE SENSOR DATA ──
+const locs = [
+  'Masjid Raya Baiturrahman',
+  'RS Zainoel Abidin',
+  'Terminal Batoh',
+  'SMPN 2 Banda Aceh',
+  'Kantor Gubernur Aceh',
+];
+const locDeteksi = [2, 0, 4, 1, 1];
+const locStatus  = [
+  { label:'AREA WASPADA',   desc:'Terdeteksi asap rokok di sekitar kawasan ini. Waspada dan segera laporkan jika melihat pelanggaran.' },
+  { label:'KUALITAS UDARA BAIK', desc:'Tidak ada deteksi asap rokok saat ini. Kawasan ini bebas rokok. Terima kasih!' },
+  { label:'AREA MERAH — PELANGGARAN AKTIF', desc:'Banyak pelanggaran terdeteksi di Terminal Batoh hari ini. Petugas Satpol PP sedang diterjunkan.' },
+  { label:'WASPADA — AREA SEKOLAH', desc:'Sensor mendeteksi asap rokok di area sekolah. Harap bantu laporkan pelanggaran yang Anda lihat.' },
+  { label:'AREA WASPADA', desc:'Ada laporan pelanggaran merokok di area kantor pemerintah. Terima kasih atas kewaspadaan Anda.' },
+];
+
+function initSplash() {
+  // Pick nearest location (randomized for demo)
+  const idx = Math.floor(Math.random() * locs.length);
+  document.getElementById('locName').textContent = locs[idx];
+  document.getElementById('smokeVal').textContent = locDeteksi[idx];
+  document.getElementById('smokeStatus').textContent = locStatus[idx].label;
+  document.getElementById('smokeDesc').textContent = locStatus[idx].desc;
+  document.getElementById('gpsLoc').textContent = locs[idx] + ', Banda Aceh';
+
+  // AQI card gradient based on level
+  const card = document.querySelector('.aqi-card');
+  const v = locDeteksi[idx];
+  if(v === 0) card.style.background = 'linear-gradient(135deg, #00a882 0%, #0081cc 100%)';
+  else if(v <= 2) card.style.background = 'linear-gradient(135deg, #d4900a 0%, #c87b00 100%)';
+  else card.style.background = 'linear-gradient(135deg, #d43030 0%, #9a1a1a 100%)';
+
+  // Live counter
+  let deteksi = locDeteksi[idx];
+  setInterval(() => {
+    deteksi = Math.max(0, deteksi + (Math.random() > 0.7 ? (Math.random() > 0.5 ? 1 : -1) : 0));
+    document.getElementById('smokeVal').textContent = Math.round(deteksi);
+    document.getElementById('chip1').textContent = Math.round(deteksi);
+  }, 8000);
+}
+
+// ── FORM: CATEGORY ──
+let selectedCat = '🚬 Merokok di KTR';
+function selectCat(el, cat) {
+  document.querySelectorAll('.cat-item').forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected');
+  selectedCat = cat;
+  updateProgress();
+}
+
+// ── FORM: SEVERITY ──
+let selectedSev = 'r';
+function selectSev(s) {
+  ['r','y','x'].forEach(v => {
+    const el = document.getElementById('sev-'+v);
+    el.classList.remove('selected-r','selected-y','selected-x');
+  });
+  document.getElementById('sev-'+s).classList.add('selected-'+s);
+  selectedSev = s;
+}
+
+// ── FORM: PROGRESS ──
+function updateProgress() {
+  const desc = document.getElementById('descField')?.value || '';
+  const loc  = document.getElementById('ktrLoc')?.value || '';
+  let score = 0;
+  if(selectedCat) score += 30;
+  if(loc)         score += 30;
+  if(desc.length > 10) score += 40;
+  document.getElementById('progressFill').style.width = score + '%';
+  document.getElementById('progressTxt').textContent = score + '%';
+}
+
+// ── FORM: FILE UPLOAD ──
+function handleUpload(e) {
+  const file = e.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    document.getElementById('previewImg').src = ev.target.result;
+    document.getElementById('uploadDefault').style.display = 'none';
+    document.getElementById('uploadPreview').style.display = 'flex';
+  };
+  reader.readAsDataURL(file);
+  updateProgress();
+}
+
+// ── FORM: SUBMIT ──
+function submitReport() {
+  const btn = document.querySelector('.form-submit-btn');
+  btn.textContent = '⏳ Mengirim...';
+  btn.disabled = true;
+  setTimeout(() => goToSuccess(), 1200);
+}
+
+// ── INIT ──
+initSplash();
+</script>
+</body>
+</html>
